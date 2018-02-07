@@ -1,11 +1,15 @@
 body {
   padding: 0;
   text-align: center;
+  background-image: url("images/redBackground.jpg");
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  justify-content: center;
 }
 
 .game-intro {
   float: left;
-  padding: 0% 10%;
 }
 
 .game-intro p {
@@ -17,9 +21,6 @@ body {
   width: 350px;
 }
 
-.arrows-img {
-  width: 150px;
-}
 
 body button {
   font-size: 30px;
@@ -30,9 +31,25 @@ body button {
   box-shadow: 0;
   border-radius: 5px;
   margin-bottom: 20px;
+  margin-top: 50px;
 }
 
-#game-board {
-    float: left;
-    padding: 20px 0px;
+canvas {
+  border: 2px black solid;
+  margin: 10px;
+  float: left;
+}
+
+figure {
+  background-color: white;
+  border: 3px solid black;
+  height: 30%;
+}
+
+figure img{
+  width: 30%;
+}
+
+.hidden{
+  display: none;
 }

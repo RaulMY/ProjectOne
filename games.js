@@ -1,3 +1,5 @@
+// Overall variables
+
 var playerTotal = 0;
 var playerTotal2 = 0;
 var gameStatus = 0;
@@ -6,12 +8,26 @@ var player;
 var player2;
 var points=0;
 var points2=0;
+
+// Images and Sounds for the whole game
+
 var trophy = new Image;
 trophy.src = "images/Trophy.png"
 
+var winningBackground = new Image;
+winningBackground.src = "images/winning.png"
+
+var pokeball = new Image;
+pokeball.src = "images/Pokeball.png"
+
+var minorWin = new Audio("sounds/minorWin.wav");
+
+var winningTheme = new Audio("sounds/winning.mp3")
+
+// Assign click event on load
+
 window.onload = function() {
   document.getElementById("start-button").onclick = function() {
-    document.getElementsByTagName("body")[0].innerHTML += "<embed id=\"music\" loop=\"true\" src=\"bicycleTheme.mp3\" hidden=\"true\"></embed>";
     startChanseyGame();
   }
 };
@@ -20,6 +36,8 @@ window.onload = function() {
 
 var fired = false;
 var fired2 = false;
+
+// Keydown event
 
   document.onkeydown=function(e){
     if(!fired && e.keyCode>=37 && e.keyCode<=40) {
@@ -61,7 +79,6 @@ var fired2 = false;
     
   };
 
-  
   document.onkeyup = function() {
     if (fired){
 
@@ -80,13 +97,14 @@ var fired2 = false;
     }
 }, false);
 
+// Assign the click function for games after the first 
+
 function assignClick (){
   document.getElementById("start-button").onclick = function() {
     if (gameStatus===0){
       if (game===1){
         document.getElementsByTagName("body")[0].removeChild(document.getElementsByTagName("canvas")[1]);
         document.getElementsByTagName("body")[0].removeChild(document.getElementsByTagName("canvas")[0]);
-        document.getElementsByTagName("body")[0].innerHTML += "<embed id=\"music\" loop=\"true\" src=\"pokemonCenter.mp3\" hidden=\"true\"></embed>";
         startClefairyGame();
       } else if (game===2){
         document.getElementsByTagName("body")[0].removeChild(document.getElementsByTagName("canvas")[1]);
@@ -105,7 +123,8 @@ function assignClick (){
     this.x = x;
     this.y = y;
     this.img = new Image();
-    this.img.src = "images/chansey.png";
+    this.indexFrames = 0;
+    this.img.src = "images/chanseySprite.png";
     this.moveLeft = function(){
       if (this.x>1){
       this.x-=100;
@@ -123,6 +142,7 @@ function assignClick (){
     this.moveDown = function(){
     };
   }
+
   PlayerChansey.prototype.left = function(){
     return this.x;
   }
@@ -140,7 +160,7 @@ function assignClick (){
   }
 
   PlayerChansey.prototype.crashWith = function(obstacle){
-    return !((this.bottom() < obstacle.top())    ||
+    return !((this.bottom()< obstacle.top())    ||
     (this.top()    > obstacle.bottom()) ||
     (this.right()  < obstacle.left())   ||
     (this.left()   > obstacle.right()))
@@ -157,8 +177,9 @@ function assignClick (){
   var exploX2 = 0;
   var exploY2 = 0;
   var exploFrames = "Hola";
-
   var exploFrames2 = "Hola";
+  var exploSound = new Audio("sounds/explo.mp3");
+  var eggSound = new Audio("sounds/eggs.mp3");
 
   function Obstacle(x, y, type){
     this.x= x;
@@ -198,8 +219,19 @@ function assignClick (){
 //1.3 Update Chansey Area
   
   function updateGameArea(){
-    if (points2===1 || points ===1){
+    // To animate the sprite
+    player.indexFrames++;
+    player2.indexFrames++;
+    if (player.indexFrames===51){
+      player.indexFrames=0;
+    }
+    if (player2.indexFrames===51){
+      player2.indexFrames=0;
+    }
+    //Win Condition
+    if (points2===20 || points ===20){
       clearInterval(myGameArea.interval)
+      minorWin.play();
       document.getElementById("music").parentNode.removeChild(document.getElementById("music"))
       if (points>points2){
         playerTotal+=3;
@@ -246,6 +278,7 @@ function assignClick (){
       }
 
     }
+    // Create objects
     exploFrames++;
     exploFrames2++;
     myGameArea.clear();
@@ -279,15 +312,18 @@ function assignClick (){
       myObstacles2[j].update2();
     }
     drawPlayer();
+    //Check for collisions
     for (var p = 0 ; p< myObstacles.length; p++){
       if (player.crashWith(myObstacles[p])) {
         if (myObstacles[p].type===1){
+          exploSound.play();
           points-=5;
           exploX =  myObstacles[p].x;
           exploY = myObstacles[p].y
           exploFrames = 1
           myGameArea.ctx.drawImage(explosion, exploX, exploY, 100, 100);
         } else {
+          eggSound.play();
         points++;
         }
         myObstacles.splice(p, 1);
@@ -298,19 +334,21 @@ function assignClick (){
     for (var p = 0 ; p< myObstacles2.length; p++){
       if (player2.crashWith(myObstacles2[p])) {
         if (myObstacles2[p].type===1){
+          exploSound.play();
           points2-=5;
           exploX2 =  myObstacles2[p].x;
           exploY2 = myObstacles2[p].y
           exploFrames2 = 1
           myGameArea.ctx2.drawImage(explosion, exploX2, exploY2, 100, 100);
         } else {
+          eggSound.play();
         points2++;
         }
         myObstacles2.splice(p, 1);
         
       }
     }
-
+    //Keep the explosion for 10 frames
     if (exploFrames>0){
       if (exploFrames>11){
         exploFrames="Hola";
@@ -349,11 +387,9 @@ function assignClick (){
         this.ctx2 = this.canvas2.getContext("2d");
         this.ctx = this.canvas.getContext("2d");
 
-        document.body.insertBefore(this.canvas2, document.body.childNodes[1]);
         document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        document.body.insertBefore(this.canvas2, document.body.childNodes[5]);
         this.interval = setInterval(updateGameArea, 20);
-
-        
     },
     clear : function(){
       this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
@@ -376,14 +412,17 @@ function assignClick (){
   }
 
   function startChanseyGame() {
-    myGameArea.start();
-    player = new PlayerChansey(100, 500);
-    player2 = new PlayerChansey(100, 500);
+      document.getElementsByTagName("body")[0].innerHTML += "<audio controls autoplay loop id=\"music\" class=\"hidden\"><source src=\"sounds/bicycleTheme.mp3\" type=\"audio/mpeg\"></audio>;";
+      document.getElementsByTagName("figure")[0].classList.add("hidden");
+      document.getElementsByTagName("figure")[1].classList.add("hidden");
+      myGameArea.start();
+      player = new PlayerChansey(100, 500);
+      player2 = new PlayerChansey(100, 500);
   }
 
   function drawPlayer(){
-    myGameArea.ctx.drawImage(player.img, player.x, player.y, 100,100);
-    myGameArea.ctx2.drawImage(player2.img, player2.x, player2.y, 100,100);
+    myGameArea.ctx.drawImage(player.img, 0 + 74*player.indexFrames, 0, 74, 58, player.x, player.y, 100,100);
+    myGameArea.ctx2.drawImage(player2.img, 0 + 74*player2.indexFrames, 0, 74, 58, player2.x, player2.y, 100,100);
   }
 
 // 2. Clefairy Game
@@ -508,8 +547,8 @@ wrongX.src = "images/wrongX.png";
 var check = new Image();
 check.src = "images/check.png";
 var counterCorrect = 0;
-var beep = new Audio('beep.mp3');
-var wrongBuzzer = new Audio('wrong.mp3');
+var beep = new Audio('sounds/beep.mp3');
+var wrongBuzzer = new Audio('sounds/wrong.mp3');
 
 function updateClefairyArea(){
   myClefairyArea.frames++;
@@ -517,6 +556,7 @@ function updateClefairyArea(){
   myClefairyArea.drawBackground();
   myClefairyArea.drawClefairy();
   myClefairyArea.score();
+  // Create and draw the sequence
   if (myClefairyArea.frames >100){
     if (myClefairyArea.frames%50===0){
       direction = Math.floor(Math.random()*4);
@@ -530,6 +570,8 @@ function updateClefairyArea(){
     sequence[j].update2();
   }
 
+  // Stop the update once the sequence is finished 
+
   if (sequence.length===counterArrows){
 
     clearInterval(myClefairyArea.interval);
@@ -537,7 +579,7 @@ function updateClefairyArea(){
     myClefairyArea.ctx2.font="50px sarif";
     myClefairyArea.ctx.fillText("Memorize it!", 20, 100);
     myClefairyArea.ctx2.fillText("Memorize it!", 20, 100);
-
+  // Give some time for them to memorize it
     setTimeout(function(){
       myClefairyArea.clear();
       myClefairyArea.drawBackground();
@@ -547,21 +589,25 @@ function updateClefairyArea(){
       myClefairyArea.ctx2.fillText("Repeat it!", 50, 100);
       drawCircles();
       instruc=1;
+      // Give some time to give the commands
       setTimeout(function(){
         instruc=0;
         checking = setInterval(function(){
           myClefairyArea.clear();
           myClefairyArea.drawBackground();
           myClefairyArea.score();
+          // Draw the sequence
           sequence[counterCorrect].x=30*counterCorrect+30;
           sequence[counterCorrect].update();
           sequence[counterCorrect].update2();
+          // Draw the player sequence
           if(counterCorrect<player.sequence.length){
             myClefairyArea.ctx.drawImage(player.sequence[counterCorrect][0], 30*counterCorrect+30, 205, 30, 30);
           }
           if(counterCorrect<player2.sequence.length){
             myClefairyArea.ctx2.drawImage(player2.sequence[counterCorrect][0], 30*counterCorrect+30, 205, 30, 30);
           }
+          // If it's wrong, or no command was given, print an X, else print a Check
           if (counterCorrect>=player.sequence.length || player.sequence[counterCorrect][1]!=sequence[counterCorrect].direction){
             myClefairyArea.ctx.drawImage(wrongX, 30*counterCorrect+30, 240, 30, 30);
             wrongBuzzer.play();
@@ -643,11 +689,13 @@ function updateClefairyArea(){
             }
           };
           counterCorrect++;
+          // Stop the update once the sequence has been checked
           if (counterCorrect>=counterArrows){
             clearInterval(checking);
-            
+            // Give a second before starting next round
             setTimeout(function(){
-              if (points2<=0 || points <=0){
+              // Check if end condition has been met
+              if (points2<=0 || points <=0 || counterArrows ===8){
                 myClefairyArea.stop();
                 return;
               }
@@ -663,7 +711,7 @@ function updateClefairyArea(){
               return;
             }, 1000)
           }
-        }, 2500)
+        }, 1000)
       }, 1500*counterArrows)
     }, 3000)
 
@@ -705,8 +753,8 @@ var myClefairyArea = {
     this.ctx.drawImage(bgClefairy, -450, 0, 1200, 600);
   },
   start : function() {
-      points = 1;
-      points2 = 1;
+      points = 8;
+      points2 = 8;
       this.canvas.width = 300;
       this.canvas.height = 600;
 
@@ -715,8 +763,8 @@ var myClefairyArea = {
       this.ctx2 = this.canvas2.getContext("2d");
       this.ctx = this.canvas.getContext("2d");
 
-      document.body.insertBefore(this.canvas2, document.body.childNodes[1]);
       document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+      document.body.insertBefore(this.canvas2, document.body.childNodes[5]);
 
       this.interval = setInterval(updateClefairyArea, 20);
   },
@@ -788,6 +836,7 @@ var myClefairyArea = {
   },
   stop : function(){
     document.getElementById("music").parentNode.removeChild(document.getElementById("music"))
+    minorWin.play();
     this.clear();
     this.drawBackground();
     this.drawClefairy();
@@ -821,26 +870,38 @@ var myClefairyArea = {
 
 function startClefairyGame() {
   gameStatus=1;
-  myClefairyArea.start();
-  player = new PlayerClefairy(115,475);
-  player.context = myClefairyArea.ctx;
-  player2 = new PlayerClefairy(115, 475);
-  player2.context = myClefairyArea.ctx2;
+  document.getElementsByTagName("figure")[0].classList.remove("hidden");
+  document.getElementsByTagName("figure")[1].classList.remove("hidden");
+  document.getElementsByClassName("first")[0].classList.add("hidden");
+  document.getElementsByClassName("first")[1].classList.add("hidden");
+  document.getElementsByClassName("second")[0].classList.remove("hidden");
+  document.getElementsByClassName("second")[1].classList.remove("hidden");
+  setTimeout(function(){
+    document.getElementsByTagName("figure")[0].classList.add("hidden");
+    document.getElementsByTagName("figure")[1].classList.add("hidden");
+    document.getElementsByTagName("body")[0].innerHTML += "<audio controls autoplay loop id=\"music\" class=\"hidden\"><source src=\"sounds/pokemonCenter.mp3\" type=\"audio/mpeg\"></audio>;"
+    myClefairyArea.start();
+    player = new PlayerClefairy(115,475);
+    player.context = myClefairyArea.ctx;
+    player2 = new PlayerClefairy(115, 475);
+    player2.context = myClefairyArea.ctx2;
+  }, 5000)
 }
 
 // 3. Golbat Game
 
 // 3.1 Golbat Creator
 
-var golbatImg = new Image();
-golbatImg.src = "images/golbat.png";
+var golbatSprite = new Image();
+golbatSprite.src = "images/golbatSpriteHorizontal.png";
 
-var golbatImg2 = new Image();
-golbatImg2.src = "images/golbat2.png";
+var golbatShinySprite = new Image();
+golbatShinySprite.src = "images/golbatShinySpriteHorizontal.png";
 
 function PlayerGolbat(x, y){
   this.x = x;
     this.y = y;
+    this.indexFrames = 0;
     this.moveLeft = function(){
       this.x-=30;
     };
@@ -860,15 +921,15 @@ PlayerGolbat.prototype.left = function(){
 }
 
 PlayerGolbat.prototype.right = function(){
-  return this.x+100;
+  return this.x+158;
 }
 
 PlayerGolbat.prototype.top = function(){
-  return this.y;
+  return this.y+50;
 }
 
 PlayerGolbat.prototype.bottom = function(){
-  return this.y+35;
+  return this.y+100;
 }
 
 PlayerGolbat.prototype.crashWith = function(obstacle){
@@ -885,6 +946,9 @@ PlayerGolbat.prototype.crashWith = function(obstacle){
 
  var magnemite = new Image();
  magnemite.src = "images/magnemite.png"
+
+var heartSound = new Audio('sounds/heart.wav');
+var electricSound = new Audio('sounds/electric.mp3');
 
 function Heart(x, y, type){
   this.x = x;
@@ -951,6 +1015,14 @@ var magneFrames2 = "Hola";
 
 function updateGolbatArea(){
   myGolbatArea.frames++;
+  player.indexFrames++;
+  player2.indexFrames++;
+  if (player.indexFrames===58){
+    player.indexFrames=0;
+  }
+  if (player2.indexFrames===58){
+    player2.indexFrames=0;
+  }
   xBg++;
   if (xBg>900){
     xBg=0;
@@ -960,7 +1032,7 @@ function updateGolbatArea(){
   myGolbatArea.drawPlayer();
   if (myGolbatArea.frames %30 ===0){
     side = Math.floor(Math.random()*3);
-    type = Math.floor(Math.random()*5);
+    type = Math.floor(Math.random()*4);
     if (type===0){
       if (side===2){
         myItems.push(new Magnemite(0, 500, type));
@@ -997,23 +1069,25 @@ function updateGolbatArea(){
       if (myItems[p].type===0){
         
         magneFrames = 1
-        myGolbatArea.ctx.drawImage(electrify, player.x, player.y-35, 100, 100);
+        myGolbatArea.ctx.drawImage(electrify, player.x, player.y, 150, 150);
+        electricSound.play();
         if (points>=5){
           points-=5;
-          myItems.push(new Heart(player.x+150, player.y, 1));
-          myItems.push(new Heart(player.x+150, player.y+50, 1));
-          myItems.push(new Heart(player.x+150, player.y+100, 1));
-          myItems.push(new Heart(player.x+150, player.y-50, 1));
-          myItems.push(new Heart(player.x+150, player.y-100, 1));
-        } else if (points>0){
-          points-=5;
+          myItems.push(new Heart(player.x+200, player.y, 1));
+          myItems.push(new Heart(player.x+200, player.y+50, 1));
+          myItems.push(new Heart(player.x+200, player.y+100, 1));
+          myItems.push(new Heart(player.x+200, player.y-50, 1));
+          myItems.push(new Heart(player.x+200, player.y-100, 1));
+        } else{
           for (var i=0 ; i<points; i++){
-          myItems.push(new Heart(player.x+150, player.y-50+i*50, 1)); 
+          myItems.push(new Heart(player.x+200, player.y-50+i*50, 1)); 
+          
         }
-        console.log(myItems.length)
+        points=0;
         }
       } else {
       points++;
+      heartSound.play();
       }
       myItems.splice(p, 1);
       
@@ -1024,24 +1098,26 @@ function updateGolbatArea(){
     if (player2.crashWith(myItems[p])) {
       if (myItems[p].type===0){
         magneFrames2 = 1
-        myGolbatArea.ctx.drawImage(electrify, player2.x, player2.y-35, 100, 100);
+        myGolbatArea.ctx.drawImage(electrify,player2.x, player2.y, 150, 150);
+        electricSound.play();
         if (points2>=5){
           points2-=5;
-          myItems.push(new Heart(player2.x+150, player2.y, 1));
-          myItems.push(new Heart(player2.x+150, player2.y+50, 1));
-          myItems.push(new Heart(player2.x+150, player2.y+100, 1));
-          myItems.push(new Heart(player2.x+150, player2.y-50, 1));
-          myItems.push(new Heart(player2.x+150, player2.y-100, 1));
-        } else if (points2>0){
-          points2-=5;
+          myItems.push(new Heart(player2.x+200, player2.y, 1));
+          myItems.push(new Heart(player2.x+200, player2.y+50, 1));
+          myItems.push(new Heart(player2.x+200, player2.y+100, 1));
+          myItems.push(new Heart(player2.x+200, player2.y-50, 1));
+          myItems.push(new Heart(player2.x+200, player2.y-100, 1));
+        } else {
           for (var i=0 ; i<points2; i++){
-          myItems.push(new Heart(player2.x+150, player2.y-50+i*50, 1)); 
-        }
-        
+          myItems.push(new Heart(player2.x+200, player2.y-50+i*50, 1)); 
+          
+          }
+        points2=0;
         console.log(myItems.length)
         }
       } else {
       points2++;
+      heartSound.play();
       }
       myItems.splice(p, 1);
       
@@ -1051,13 +1127,13 @@ function updateGolbatArea(){
     if (magneFrames>11){
       magneFrames="Hola";
     }
-    myGolbatArea.ctx.drawImage(electrify, player.x, player.y-35, 100, 100);
+    myGolbatArea.ctx.drawImage(electrify, player.x, player.y, 150, 150);
   }
   if (magneFrames2>0){
     if (magneFrames2>11){
       magneFrames2="Hola";
     }
-    myGolbatArea.ctx.drawImage(electrify, player2.x, player2.y-35, 100, 100);
+    myGolbatArea.ctx.drawImage(electrify, player2.x, player2.y, 150, 150);
   }
   
   magneFrames++;
@@ -1069,6 +1145,7 @@ function updateGolbatArea(){
 var backgroundCave = new Image;
 backgroundCave.src="images/caveBackground.png"
 
+
 var myGolbatArea = {
   canvas : document.createElement("canvas"),
   frames : 1,
@@ -1077,9 +1154,9 @@ var myGolbatArea = {
     this.ctx.drawImage(backgroundCave, xBg-900, 0, 900, 600);
   },
   drawPlayer: function(){
-    this.ctx.drawImage(player.img, player.x, player.y, 100, 35);
+    this.ctx.drawImage(player.img , 0 + 158*player.indexFrames, 0, 158, 136, player.x, player.y, 158, 136)
 
-    this.ctx.drawImage(player2.img, player2.x, player2.y, 100, 35);
+    this.ctx.drawImage(player2.img , 0 + 158*player2.indexFrames, 0, 158, 136, player2.x, player2.y, 158, 136)
   },
   start : function() {
       points = 0;
@@ -1089,7 +1166,7 @@ var myGolbatArea = {
 
       this.ctx = this.canvas.getContext("2d");
 
-      document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+      document.body.insertBefore(this.canvas, document.body.childNodes[5]);
 
       this.interval = setInterval(updateGolbatArea, 20);
   },
@@ -1100,8 +1177,10 @@ var myGolbatArea = {
     this.ctx.fillText("Player 1", 60, 30);
     this.ctx.fillText("Score: "+points2, 460, 30);
     this.ctx.fillText("Player 2", 360, 30);
-    if (points >=10 || points2>=10){
+    if (points >=20 || points2>=20){
       clearInterval(this.interval);
+      minorWin.play();
+      document.getElementById("music").parentNode.removeChild(document.getElementById("music"))
       if (points>points2){
         playerTotal+=3;
         this.ctx.font = "50px serif";
@@ -1127,19 +1206,47 @@ var myGolbatArea = {
         document.getElementById("one").innerHTML="Player 1: " +playerTotal;
         document.getElementById("two").innerHTML="Player 2: " +playerTotal2;
       }
+      setTimeout(function(){
+        winningTheme.play();
+        myGolbatArea.ctx.clearRect(0,0, 900, 600);
+        myGolbatArea.ctx.drawImage(winningBackground, 0, 0, 900, 600);
+        myGolbatArea.ctx.fillStyle="white";
+        myGolbatArea.ctx.fillRect(355, 95, 190, 295);
+        myGolbatArea.ctx.drawImage(pokeball, 375, 110, 150, 150);
+        myGolbatArea.ctx.font = "40px";
+        if (playerTotal>playerTotal2){
+          myGolbatArea.ctx.fillStyle="red";
+          myGolbatArea.ctx.fillText("Player 1", 365, 370);
+        } else if (playerTotal2){
+          myGolbatArea.ctx.fillStyle="blue";
+          myGolbatArea.ctx.fillText("Player 2", 365, 370);
+        } else {
+          myGolbatArea.ctx.fillStyle="black";
+          myGolbatArea.ctx.fillText("No one!", 375, 370);
+        }
+      },2000)
     }
   }
 }
 
 function startGolbatGame() {
   gameStatus=1;
-  myGolbatArea.start();
-  player = new PlayerGolbat(800,150);
-  player.img = golbatImg;
-  player2 = new PlayerGolbat(800, 300);
-  player2.img = golbatImg2;
-  myGolbatArea.drawBackground();
-  myGolbatArea.drawPlayer();
+  document.getElementsByTagName("figure")[0].classList.remove("hidden");
+  document.getElementsByTagName("figure")[1].classList.remove("hidden");
+  document.getElementsByClassName("second")[0].classList.add("hidden");
+  document.getElementsByClassName("second")[1].classList.add("hidden");
+  document.getElementsByClassName("third")[0].classList.remove("hidden");
+  document.getElementsByClassName("third")[1].classList.remove("hidden");
+  setTimeout(function(){
+    document.getElementsByTagName("body")[0].innerHTML += "<audio controls autoplay loop id=\"music\" class=\"hidden\"><source src=\"sounds/golbat.mp3\" type=\"audio/mpeg\"></audio>;"
+    myGolbatArea.start();
+    player = new PlayerGolbat(800,150);
+    player.img = golbatSprite;
+    player2 = new PlayerGolbat(800, 300);
+    player2.img = golbatShinySprite;
+    myGolbatArea.drawBackground();
+    myGolbatArea.drawPlayer();
+  }, 5000)
 }
 
 
