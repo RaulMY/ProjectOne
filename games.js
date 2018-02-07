@@ -1217,7 +1217,7 @@ var myGolbatArea = {
         if (playerTotal>playerTotal2){
           myGolbatArea.ctx.fillStyle="red";
           myGolbatArea.ctx.fillText("Player 1", 365, 370);
-        } else if (playerTotal2){
+        } else if (playerTotal2>playerTotal){
           myGolbatArea.ctx.fillStyle="blue";
           myGolbatArea.ctx.fillText("Player 2", 365, 370);
         } else {
